@@ -7,3 +7,21 @@
     overflow: hidden;
     border-radius: 3px;
 }
+
+#word-list .next {
+    background-color: #ddd;
+    border-radius: 3px;
+}
+
+#word-list .error {
+    background-color: #f00;
+    border-radius: 3px;
+}
+
+#word-list .good {
+    color: #0f0;
+}
+
+#word-list .bad {
+    color: #f00;
+}
