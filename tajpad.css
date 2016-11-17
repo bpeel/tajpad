@@ -34,7 +34,7 @@
     width: 4em;
 }
 
-#score-session td, #score-session th {
+#score-session td, #score-session th, #score-ever td, #score-ever th {
     padding-left: 0.5em;
     padding-right: 0.5em;
 }

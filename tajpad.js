@@ -15,6 +15,7 @@ var STATE_EATING_WORD = 2;
 var current_state = STATE_WAITING_FIRST_WORD;
 
 var best_session_scores = [];
+var best_ever_scores = [];
 
 function get_word()
 {
@@ -84,6 +85,44 @@ function check_end_of_line()
   fill_words(num_words);
 }
 
+
+function load_ever_scores()
+{
+  if (typeof(Storage) == "undefined")
+    return;
+
+  var s = localStorage.getItem("score-ever");
+
+  if (s == null)
+    return;
+
+  var parts = s.split(" ");
+
+  for (var i = 0; i < parts.length; i += 2) {
+    record = [ new Date(parseInt(parts[i])), parseInt(parts[i + 1]) ];
+    best_ever_scores.push(record);
+  }
+
+  update_score_table(best_ever_scores, document.getElementById("score-ever"));
+}
+
+
+function save_ever_scores()
+{
+  if (typeof(Storage) == "undefined")
+    return;
+
+  var parts = [];
+
+  for (var i = 0; i < best_ever_scores.length; i++) {
+    var record = best_ever_scores[i];
+    parts.push(record[0].getTime());
+    parts.push(record[1]);
+  }
+
+  localStorage.setItem("score-ever", parts.join(" "));
+}
+
 function cpm_to_wpm(cpm)
 {
   return Math.round(cpm / 5.0);
@@ -119,6 +158,23 @@ function update_score_table(scores, table)
   }
 }
 
+function add_score_record(scores, table, record)
+{
+  var insert_point;
+
+  for (insert_point = 0; insert_point < scores.length; insert_point++) {
+    if (record[1] >= scores[insert_point][1])
+      break;
+  }
+
+  scores.splice(insert_point, 0, record);
+
+  if (scores.length > 5)
+    scores.splice(5, scores.length - 5);
+
+  update_score_table(scores, table);
+}
+
 function score_timeout_cb()
 {
   current_state = STATE_EATING_WORD;
@@ -132,22 +188,14 @@ function score_timeout_cb()
   document.getElementById("score-bad").innerHTML = bad_words;
 
   var record = [ new Date(), cpm ];
-  var insert_point;
 
-  for (insert_point = 0;
-       insert_point < best_session_scores.length;
-       insert_point++) {
-    if (cpm >= best_session_scores[insert_point][1])
-      break;
-  }
-
-  best_session_scores.splice(insert_point, 0, record);
-
-  if (best_session_scores.length > 5)
-    best_session_scores.splice(5, best_session_scores.length - 5);
-
-  update_score_table(best_session_scores,
-                     document.getElementById("score-session"));
+  add_score_record(best_session_scores,
+                   document.getElementById("score-session"),
+                   record);
+  add_score_record(best_ever_scores,
+                   document.getElementById("score-ever"),
+                   record);
+  save_ever_scores();
 }
 
 function start_timing()
@@ -212,6 +260,8 @@ function initialise()
 
   var word_input = document.getElementById("word-input");
   word_input.oninput = function() { word_changed(word_input) };
+
+  load_ever_scores();
 }
 
 window.onload = initialise;
