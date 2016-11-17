@@ -25,3 +25,11 @@
 #word-list .bad {
     color: #f00;
 }
+
+.score-name {
+    font-weight: bold;
+}
+
+.score-field {
+    width: 4em;
+}

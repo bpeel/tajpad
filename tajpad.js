@@ -4,6 +4,16 @@ var next_word = 0;
 var end_word_re = /[^ ] /;
 var word_ok = true;
 
+var good_words = 0;
+var bad_words = 0;
+var good_characters = 0;
+
+var STATE_WAITING_FIRST_WORD = 0;
+var STATE_TIMING_WORDS = 1;
+var STATE_EATING_WORD = 2;
+
+var current_state = STATE_WAITING_FIRST_WORD;
+
 function get_word()
 {
   var score = Math.random();
@@ -72,15 +82,50 @@ function check_end_of_line()
   fill_words(num_words);
 }
 
+function score_timeout_cb()
+{
+  current_state = STATE_EATING_WORD;
+
+  var cpm = good_characters;
+  var wpm = Math.round(cpm / 5.0);
+
+  document.getElementById("score-cpm").innerHTML = cpm;
+  document.getElementById("score-wpm").innerHTML = wpm;
+  document.getElementById("score-good").innerHTML = good_words;
+  document.getElementById("score-bad").innerHTML = bad_words;
+}
+
+function start_timing()
+{
+  current_state = STATE_TIMING_WORDS;
+  good_words = 0;
+  bad_words = 0;
+  good_characters = 0;
+
+  setTimeout(score_timeout_cb, 60000);
+}
+
 function word_changed(word_input)
 {
   var value = word_input.value;
 
+  if (current_state == STATE_WAITING_FIRST_WORD &&
+      value.length > 0)
+    start_timing();
+
   if (end_word_re.test(value)) {
     value = value.substring(0, value.length - 1);
 
-    var result = value == word_list[next_word] ? "good" : "bad";
-    span_list[next_word].className = result;
+    var result = value == word_list[next_word];
+
+    span_list[next_word].className = result ? "good" : "bad";
+
+    if (result) {
+      good_words++;
+      good_characters += word_list[next_word].length + 1;
+    } else {
+      bad_words++;
+    }
 
     next_word++;
     span_list[next_word].className = "next";
@@ -89,6 +134,9 @@ function word_changed(word_input)
     word_ok = true;
 
     check_end_of_line();
+
+    if (current_state == STATE_EATING_WORD)
+      current_state = STATE_WAITING_FIRST_WORD;
   } else if (word_list[next_word].substring(0, value.length) == value) {
     if (!word_ok) {
       span_list[next_word].className = "next";
