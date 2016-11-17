@@ -38,6 +38,40 @@ function fill_words(amount)
   }
 }
 
+function check_end_of_line()
+{
+  var current_span = span_list[next_word];
+  var word_p = current_span.parentNode;
+
+  /* Assume we’ve reached the end of the first line if the current
+   * word is positioned more than 3/8 of the way along the height of
+   * the containing paragraph. */
+
+  var word_p_rect = word_p.getBoundingClientRect();
+  var threshold = word_p_rect.x + word_p_rect.height * 3 / 8;
+
+  if (current_span.getBoundingClientRect().y < threshold)
+    return;
+
+  /* Keep deleting nodes until we find the current span. Count the
+   * number of words in the process */
+
+  var num_words = 0;
+
+  while (word_p.firstChild != current_span) {
+    if (word_p.firstChild.nodeType == Element.ELEMENT_NODE)
+      num_words++;
+
+    word_p.removeChild(word_p.firstChild);
+  }
+
+  span_list.splice(0, num_words);
+  word_list.splice(0, num_words);
+  next_word -= num_words;
+
+  fill_words(num_words);
+}
+
 function word_changed(word_input)
 {
   var value = word_input.value;
@@ -53,6 +87,8 @@ function word_changed(word_input)
 
     word_input.value = "";
     word_ok = true;
+
+    check_end_of_line();
   } else if (word_list[next_word].substring(0, value.length) == value) {
     if (!word_ok) {
       span_list[next_word].className = "next";
