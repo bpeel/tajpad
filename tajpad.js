@@ -61,9 +61,9 @@ function check_end_of_line()
    * the containing paragraph. */
 
   var word_p_rect = word_p.getBoundingClientRect();
-  var threshold = word_p_rect.x + word_p_rect.height * 3 / 8;
+  var threshold = word_p_rect.top + word_p_rect.height * 3 / 8;
 
-  if (current_span.getBoundingClientRect().y < threshold)
+  if (current_span.getBoundingClientRect().top < threshold)
     return;
 
   /* Keep deleting nodes until we find the current span. Count the
