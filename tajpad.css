@@ -1,9 +1,13 @@
+#word-container {
+    font-size: x-large;
+}
+
 #word-list {
     border: 2px solid black;
     padding: 0.5em;
     line-height: 1.5em;
     height: 3em;
-    width: 40em;
+    width: 25em;
     overflow: hidden;
     border-radius: 3px;
 }
