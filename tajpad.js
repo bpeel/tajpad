@@ -14,6 +14,8 @@ var STATE_EATING_WORD = 2;
 
 var current_state = STATE_WAITING_FIRST_WORD;
 
+var best_session_scores = [];
+
 function get_word()
 {
   var score = Math.random();
@@ -82,17 +84,70 @@ function check_end_of_line()
   fill_words(num_words);
 }
 
+function cpm_to_wpm(cpm)
+{
+  return Math.round(cpm / 5.0);
+}
+
+function append_field(row, value)
+{
+  var td = document.createElement("td");
+  td.appendChild(document.createTextNode(value));
+  row.appendChild(td);
+}
+
+function update_score_table(scores, table)
+{
+  var first_element = table.firstElementChild;
+
+  /* Get rid of everything after the header row */
+  while (first_element.nextSibling)
+    table.removeChild(first_element.nextSibling);
+
+  for (var i = 0; i < scores.length; i++) {
+    var record = scores[i];
+    var row = document.createElement("tr");
+
+    append_field(row,
+                 record[0].toLocaleDateString() +
+                 " " +
+                 record[0].toLocaleTimeString());
+    append_field(row, cpm_to_wpm(record[1]));
+    append_field(row, record[1]);
+
+    table.appendChild(row);
+  }
+}
+
 function score_timeout_cb()
 {
   current_state = STATE_EATING_WORD;
 
   var cpm = good_characters;
-  var wpm = Math.round(cpm / 5.0);
+  var wpm = cpm_to_wpm(cpm);
 
   document.getElementById("score-cpm").innerHTML = cpm;
   document.getElementById("score-wpm").innerHTML = wpm;
   document.getElementById("score-good").innerHTML = good_words;
   document.getElementById("score-bad").innerHTML = bad_words;
+
+  var record = [ new Date(), cpm ];
+  var insert_point;
+
+  for (insert_point = 0;
+       insert_point < best_session_scores.length;
+       insert_point++) {
+    if (cpm >= best_session_scores[insert_point][1])
+      break;
+  }
+
+  best_session_scores.splice(insert_point, 0, record);
+
+  if (best_session_scores.length > 5)
+    best_session_scores.splice(5, best_session_scores.length - 5);
+
+  update_score_table(best_session_scores,
+                     document.getElementById("score-session"));
 }
 
 function start_timing()
