@@ -1,3 +1,11 @@
+#current-container {
+    float: left;
+}
+
+h2 {
+    clear: both;
+}
+
 #word-container {
     font-size: x-large;
 }

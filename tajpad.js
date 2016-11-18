@@ -17,9 +17,25 @@ var current_state = STATE_WAITING_FIRST_WORD;
 var best_session_scores = [];
 var best_ever_scores = [];
 
+var score_history = [];
+var SCORE_HISTORY_LENGTH = 20;
+
 var timer_id;
 var timer_element;
 var timer_start_time;
+
+function update_score_graph()
+{
+  var parts = [];
+
+  for (var i = 0; i < score_history.length; i++) {
+    var wpm = cpm_to_wpm(score_history[i]);
+    parts.push((i == 0 ? "M " : "L ") + (i * 10) + "," + wpm);
+  }
+
+  var line = document.getElementById("score-graph-line");
+  line.setAttribute("d", parts.join(" "));
+}
 
 function update_timer()
 {
@@ -210,6 +226,11 @@ function score_timeout_cb()
                    document.getElementById("score-ever"),
                    record);
   save_ever_scores();
+
+  score_history.push(cpm);
+  if (score_history.length > SCORE_HISTORY_LENGTH)
+    score_history.splice(0, Math.floor(SCORE_HISTORY_LENGTH / 4));
+  update_score_graph();
 }
 
 function start_timing()
