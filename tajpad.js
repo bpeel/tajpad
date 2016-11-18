@@ -17,6 +17,18 @@ var current_state = STATE_WAITING_FIRST_WORD;
 var best_session_scores = [];
 var best_ever_scores = [];
 
+var timer_id;
+var timer_element;
+var timer_start_time;
+
+function update_timer()
+{
+  var now = new Date();
+  var diff = 60 - Math.round((now.getTime() -
+                              timer_start_time.getTime()) / 1000);
+  timer_element.innerHTML = diff;
+}
+
 function get_word()
 {
   var score = Math.random();
@@ -178,6 +190,8 @@ function add_score_record(scores, table, record)
 function score_timeout_cb()
 {
   current_state = STATE_EATING_WORD;
+  timer_element.innerHTML = "";
+  clearInterval(timer_id);
 
   var cpm = good_characters;
   var wpm = cpm_to_wpm(cpm);
@@ -204,8 +218,11 @@ function start_timing()
   good_words = 0;
   bad_words = 0;
   good_characters = 0;
+  timer_start_time = new Date();
 
   setTimeout(score_timeout_cb, 60000);
+  timer_id = setInterval(update_timer, 1000);
+  update_timer();
 }
 
 function word_changed(word_input)
@@ -262,6 +279,8 @@ function initialise()
   word_input.oninput = function() { word_changed(word_input) };
 
   load_ever_scores();
+
+  timer_element = document.getElementById("timer");
 }
 
 window.onload = initialise;
