@@ -209,7 +209,7 @@ function add_score_record(scores, table, record)
   var insert_point;
 
   for (insert_point = 0; insert_point < scores.length; insert_point++) {
-    if (record[1] >= scores[insert_point][1])
+    if (record[1] > scores[insert_point][1])
       break;
   }
 
