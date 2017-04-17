@@ -42,6 +42,10 @@ var timer_id;
 var timer_element;
 var timer_start_time;
 
+var score_timeout_id;
+
+var last_change_time;
+
 function update_score_graph()
 {
   var parts = [];
@@ -61,6 +65,11 @@ function update_timer()
   var diff = 60 - Math.round((now.getTime() -
                               timer_start_time.getTime()) / 1000);
   timer_element.innerHTML = diff;
+
+  /* If nothing is typed for more than 5 seconds then give up on this
+   * timing */
+  if (now.getTime() - last_change_time.getTime() >= 5000)
+    stop_timing();
 }
 
 function get_word()
@@ -221,11 +230,22 @@ function add_score_record(scores, table, record)
   update_score_table(scores, table);
 }
 
-function score_timeout_cb()
+function stop_timing()
 {
+  if (score_timeout_id != -1) {
+    clearTimeout(score_timeout_id);
+    score_timeout_id = -1;
+  }
   current_state = STATE_EATING_WORD;
   timer_element.innerHTML = "";
   clearInterval(timer_id);
+}
+
+function score_timeout_cb()
+{
+  score_timeout_id = -1;
+
+  stop_timing();
 
   var cpm = good_characters;
   var wpm = cpm_to_wpm(cpm);
@@ -259,7 +279,7 @@ function start_timing()
   good_characters = 0;
   timer_start_time = new Date();
 
-  setTimeout(score_timeout_cb, 60000);
+  score_timeout_id = setTimeout(score_timeout_cb, 60000);
   timer_id = setInterval(update_timer, 1000);
   update_timer();
 }
@@ -267,6 +287,8 @@ function start_timing()
 function word_changed(word_input)
 {
   var value = word_input.value;
+
+  last_change_time = new Date();
 
   if (current_state == STATE_WAITING_FIRST_WORD &&
       value.length > 0)
