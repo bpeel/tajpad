@@ -19,11 +19,9 @@
 var span_list = [];
 var word_list = [];
 var next_word = 0;
-var end_word_re = /[^ ] /;
 var word_ok = true;
 
 var good_words = 0;
-var bad_words = 0;
 var good_characters = 0;
 
 var STATE_WAITING_FIRST_WORD = 0;
@@ -253,7 +251,6 @@ function score_timeout_cb()
   document.getElementById("score-cpm").innerHTML = cpm;
   document.getElementById("score-wpm").innerHTML = wpm;
   document.getElementById("score-good").innerHTML = good_words;
-  document.getElementById("score-bad").innerHTML = bad_words;
 
   var record = [ new Date(), cpm ];
 
@@ -275,7 +272,6 @@ function start_timing()
 {
   current_state = STATE_TIMING_WORDS;
   good_words = 0;
-  bad_words = 0;
   good_characters = 0;
   timer_start_time = new Date();
 
@@ -294,19 +290,13 @@ function word_changed(word_input)
       value.length > 0)
     start_timing();
 
-  if (end_word_re.test(value)) {
-    value = value.substring(0, value.length - 1);
+  if (value.length == word_list[next_word].length + 1 &&
+      value.substring(0, value.length - 1) == word_list[next_word] &&
+      value.substring(value.length - 1) == " ") {
+    span_list[next_word].className = "good";
 
-    var result = value == word_list[next_word];
-
-    span_list[next_word].className = result ? "good" : "bad";
-
-    if (result) {
-      good_words++;
-      good_characters += word_list[next_word].length + 1;
-    } else {
-      bad_words++;
-    }
+    good_words++;
+    good_characters += word_list[next_word].length + 1;
 
     next_word++;
     span_list[next_word].className = "next";
