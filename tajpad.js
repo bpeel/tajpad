@@ -48,9 +48,19 @@ function update_score_graph()
 {
   var parts = [];
 
-  for (var i = 0; i < score_history.length; i++) {
-    var wpm = cpm_to_wpm(score_history[i]);
-    parts.push((i == 0 ? "M " : "L ") + (i * 10) + "," + wpm);
+  if (score_history.length > 0) {
+    var x_scale;
+    if (score_history.length > 1)
+      x_scale = 200.0 / (score_history.length - 1);
+    else
+      x_scale = 0.0;
+    var wpm;
+    for (var i = 0; i < score_history.length; i++) {
+      wpm = cpm_to_wpm(score_history[i]);
+      parts.push((i == 0 ? "M " : "L ") + (i * x_scale) + "," + wpm);
+    }
+    if (score_history.length == 1)
+      parts.push("L 200.0," + wpm);
   }
 
   var line = document.getElementById("score-graph-line");
